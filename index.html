@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Three.js Credit Card</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+        canvas {
+            display: block;
+        }
+        #text-interface {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        #text-input {
+            width: 200px;
+            padding: 8px;
+            margin-right: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            padding: 8px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .text-properties {
+            margin-top: 10px;
+        }
+        .text-properties label {
+            display: block;
+            margin: 5px 0;
+        }
+        .text-properties input {
+            width: 50px;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="text-interface">
+        <input type="text" id="text-input" placeholder="Enter text to add to card">
+        <button id="add-text">Add Text</button>
+        <div class="text-properties">
+            <label>X Position: <input type="number" id="x-pos" value="0" step="0.01"></label>
+            <label>Y Position: <input type="number" id="y-pos" value="0" step="0.01"></label>
+            <label>Font Size: <input type="number" id="font-size" value="0.01" step="0.001"></label>
+        </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="main.js"></script>
+</body>
+</html> 
