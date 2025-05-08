@@ -3,68 +3,426 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Three.js Credit Card</title>
+    <title>Cloud Cards - Custom Card Designer</title>
     <style>
+        :root {
+            --primary-color: #007AFF;
+            --secondary-color: #5856D6;
+            --text-color: #1D1D1F;
+            --background-color: #F5F5F7;
+            --card-background: rgba(255, 255, 255, 0.98);
+        }
         body {
             margin: 0;
             overflow: hidden;
-            font-family: Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: var(--background-color);
+            color: var(--text-color);
         }
-        canvas {
-            display: block;
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
         }
-        #text-interface {
-            position: absolute;
+        #controls {
+            position: fixed;
             top: 20px;
-            left: 20px;
-            background: rgba(255, 255, 255, 0.8);
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            right: 20px;
+            background: var(--card-background);
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+            max-height: calc(100vh - 100px);
+            overflow-y: auto;
+            width: 320px;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
         }
-        #text-input {
-            width: 200px;
-            padding: 8px;
-            margin-right: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
+        .control-group {
+            margin-bottom: 25px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+        .control-group h3 {
+            margin: 0 0 15px 0;
+            color: var(--text-color);
+            font-size: 16px;
+            font-weight: 600;
         }
         button {
-            padding: 8px 15px;
-            background-color: #4CAF50;
-            color: white;
+            padding: 10px 16px;
+            margin: 5px;
             border: none;
-            border-radius: 4px;
+            border-radius: 8px;
+            background: var(--primary-color);
+            color: white;
             cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s ease;
         }
         button:hover {
-            background-color: #45a049;
+            background: #0066CC;
+            transform: translateY(-1px);
         }
-        .text-properties {
+        button.delete {
+            background: #FF3B30;
+            padding: 6px 10px;
+            font-size: 12px;
+        }
+        button.delete:hover {
+            background: #FF2D55;
+        }
+        button.toggle {
+            background: var(--secondary-color);
+            width: 100%;
+            margin: 0;
+        }
+        button.toggle.active {
+            background: #FF3B30;
+        }
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 12px;
+            margin: 5px 0;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            background: rgba(255, 255, 255, 0.8);
+        }
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        select:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.15);
+        }
+        #components-list {
+            margin-top: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.8);
+        }
+        .component-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .component-item:hover {
+            background-color: rgba(0, 0, 0, 0.02);
+        }
+        .component-item.selected {
+            background-color: rgba(0, 122, 255, 0.1);
+            border-left: 3px solid var(--primary-color);
+        }
+        .mode-info {
+            font-size: 13px;
+            color: #666;
+            margin-top: 8px;
+            text-align: center;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 8px;
+        }
+        .color-options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
             margin-top: 10px;
         }
-        .text-properties label {
-            display: block;
-            margin: 5px 0;
+        .color-option {
+            padding: 12px;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
         }
-        .text-properties input {
-            width: 50px;
-            margin-left: 10px;
+        .color-option:hover {
+            transform: scale(1.05);
+        }
+        .color-option.active {
+            border-color: var(--primary-color);
+        }
+        .svg-resources {
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 8px;
+        }
+        .file-upload {
+            position: relative;
+            margin: 10px 0;
+        }
+        .file-upload input[type="file"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px dashed rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.8);
+        }
+        .file-upload input[type="file"]:hover {
+            border-color: var(--primary-color);
+        }
+        #export-svg {
+            width: 100%;
+            margin-top: 10px;
+            background: var(--secondary-color);
+        }
+        #export-svg:hover {
+            background: #4A4AFF;
+        }
+        #footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: calc(100% - 360px); /* Account for controls panel */
+            background: transparent;
+            padding: 15px 0;
+            text-align: center;
+            z-index: 1000;
+        }
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        .footer-content p {
+            margin: 5px 0;
+            color: #8E8E93;
+            font-size: 14px;
+        }
+        .contact-info {
+            color: #8E8E93;
+            font-size: 13px;
+        }
+        .contact-info a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .contact-info a:hover {
+            text-decoration: underline;
+        }
+        .dropdown-toggle {
+            width: 100%;
+            text-align: left;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            color: var(--text-color);
+            font-weight: 500;
+        }
+        .dropdown-toggle:hover {
+            background: rgba(255, 255, 255, 0.9);
+        }
+        .dropdown-arrow {
+            font-size: 12px;
+            transition: transform 0.2s ease;
+        }
+        .dropdown-toggle.active .dropdown-arrow {
+            transform: rotate(180deg);
+        }
+        .dropdown-content {
+            display: none;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 5px;
+        }
+        .dropdown-content ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .dropdown-content li {
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+        .dropdown-content a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .dropdown-content a:hover {
+            text-decoration: underline;
+        }
+        .color-message {
+            background: rgba(255, 59, 48, 0.1);
+            color: #FF3B30;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+        .color-message::before {
+            content: "ℹ️";
+            margin-right: 8px;
+        }
+        #add-text {
+            width: 100%;
+            margin-top: 10px;
+            background: var(--secondary-color);
+        }
+        #add-text:hover {
+            background: #4A4AFF;
+        }
+        .export-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .control-button {
+            flex: 1;
+            padding: 10px 16px;
+            background: var(--secondary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        .control-button:hover {
+            background: #4A4AFF;
+            transform: translateY(-1px);
         }
     </style>
 </head>
 <body>
-    <div id="text-interface">
-        <input type="text" id="text-input" placeholder="Enter text to add to card">
-        <button id="add-text">Add Text</button>
-        <div class="text-properties">
-            <label>X Position: <input type="number" id="x-pos" value="0" step="0.01"></label>
-            <label>Y Position: <input type="number" id="y-pos" value="0" step="0.01"></label>
-            <label>Font Size: <input type="number" id="font-size" value="0.01" step="0.001"></label>
+    <div id="canvas-container"></div>
+    <div id="controls">
+        <div class="control-group">
+            <button id="preview-toggle" class="toggle">Enter Preview Mode</button>
+            <div class="mode-info" id="mode-info">Edit Mode: Use mouse to rotate and zoom card</div>
+        </div>
+        <div class="control-group">
+            <h3>Text Controls</h3>
+            <input type="text" id="text-input" placeholder="Enter text">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <input type="number" id="font-size" value="24" min="8" max="72" placeholder="Font Size">
+                <select id="font-family">
+                    <option value="Arial" style="font-family: Arial;">Arial</option>
+                    <option value="Times New Roman" style="font-family: 'Times New Roman';">Times New Roman</option>
+                    <option value="Courier New" style="font-family: 'Courier New';">Courier New</option>
+                    <option value="Georgia" style="font-family: Georgia;">Georgia</option>
+                    <option value="Verdana" style="font-family: Verdana;">Verdana</option>
+                    <option value="Helvetica" style="font-family: Helvetica;">Helvetica</option>
+                    <option value="Tahoma" style="font-family: Tahoma;">Tahoma</option>
+                    <option value="Trebuchet MS" style="font-family: 'Trebuchet MS';">Trebuchet MS</option>
+                    <option value="Impact" style="font-family: Impact;">Impact</option>
+                    <option value="Comic Sans MS" style="font-family: 'Comic Sans MS';">Comic Sans MS</option>
+                    <option value="Garamond" style="font-family: Garamond;">Garamond</option>
+                    <option value="Palatino" style="font-family: Palatino;">Palatino</option>
+                    <option value="Bookman" style="font-family: Bookman;">Bookman</option>
+                    <option value="Avant Garde" style="font-family: 'Avant Garde';">Avant Garde</option>
+                    <option value="Century Gothic" style="font-family: 'Century Gothic';">Century Gothic</option>
+                </select>
+            </div>
+            <button id="add-text">Add Text</button>
+        </div>
+        <div class="control-group">
+            <h3>SVG Upload</h3>
+            <div class="file-upload">
+                <input type="file" id="svg-upload" accept=".svg">
+            </div>
+            <div class="svg-resources">
+                <button class="dropdown-toggle" onclick="toggleResources()">
+                    Free SVG Resources
+                    <span class="dropdown-arrow">▼</span>
+                </button>
+                <div class="dropdown-content" id="resources-dropdown">
+                    <ul>
+                        <li><a href="https://www.svgrepo.com/" target="_blank">SVG Repo</a> - Free SVG icons and vectors</li>
+                        <li><a href="https://www.flaticon.com/" target="_blank">Flaticon</a> - Free vector icons and stickers</li>
+                        <li><a href="https://www.freepik.com/" target="_blank">Freepik</a> - Free vectors, photos, and PSD</li>
+                        <li><a href="https://www.vecteezy.com/" target="_blank">Vecteezy</a> - Free vector art, graphics, and illustrations</li>
+                        <li><a href="https://www.svgbackgrounds.com/" target="_blank">SVG Backgrounds</a> - Free SVG background patterns</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="control-group">
+            <h3>Card Color</h3>
+            <div id="color-message" class="color-message" style="display: none;">
+                Note: Minimum order quantities may apply for this material
+            </div>
+            <div class="color-options">
+                <button class="color-option" data-color="black" style="background-color: #000000;">Black</button>
+                <button class="color-option" data-color="red" style="background-color: #cc0000;">Red</button>
+                <button class="color-option" data-color="green" style="background-color: #006600;">Green</button>
+                <button class="color-option" data-color="gold" style="background-color: #cc9900;">Gold</button>
+                <button class="color-option" data-color="blue" style="background-color: #0000cc;">Blue</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <h3>Components</h3>
+            <div id="components-list"></div>
+        </div>
+        <div class="control-group">
+            <div class="export-controls">
+                <button id="export-svg" class="control-button">Export as SVG</button>
+                <button id="export-png" class="control-button">Export as PNG</button>
+            </div>
         </div>
     </div>
+    <footer id="footer">
+        <div class="footer-content">
+            <p>&copy; <span id="current-year"></span> Kloud Technologies. All rights reserved.</p>
+            <p class="contact-info">Need custom designs, colors, or materials? <a href="https://www.cloud-cards.link/contact" target="_blank">Contact us</a> for personalized solutions.</p>
+        </div>
+    </footer>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-    <script src="main.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        // Set current year in footer
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+
+        function toggleResources() {
+            const dropdown = document.getElementById('resources-dropdown');
+            const toggle = document.querySelector('.dropdown-toggle');
+            if (dropdown.style.display === 'block') {
+                dropdown.style.display = 'none';
+                toggle.classList.remove('active');
+            } else {
+                dropdown.style.display = 'block';
+                toggle.classList.add('active');
+            }
+        }
+
+        // Update color message visibility
+        document.querySelectorAll('.color-option').forEach(button => {
+            button.addEventListener('click', () => {
+                const colorMessage = document.getElementById('color-message');
+                if (button.dataset.color === 'black') {
+                    colorMessage.style.display = 'none';
+                } else {
+                    colorMessage.style.display = 'flex';
+                }
+            });
+        });
+    </script>
 </body>
 </html> 
