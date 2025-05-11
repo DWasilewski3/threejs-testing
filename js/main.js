@@ -24,21 +24,27 @@ controls.enableDamping = true;
 controls.dampingFactor = 0.05;
 controls.minDistance = 3;
 controls.maxDistance = 15;
-controls.maxPolarAngle = Math.PI / 2;
+controls.maxPolarAngle = Math.PI;
 
-// Lighting
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+// Add light
+const ambientLight = new THREE.AmbientLight(0xffffff, 1);
 scene.add(ambientLight);
 
-// Add directional light pointing at the front of the card
-const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-directionalLight.position.set(0, 0, 5); // Position light in front of the card
+const directionalLight = new THREE.DirectionalLight(0xffffff, 0.2);
+directionalLight.position.set(15, 5, 25);
 scene.add(directionalLight);
 
-// Add a second directional light from a different angle for better depth
-const secondaryLight = new THREE.DirectionalLight(0xffffff, 0.3);
-secondaryLight.position.set(2, 2, 3);
-scene.add(secondaryLight);
+const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.2);
+directionalLight2.position.set(15, -5, 25);
+scene.add(directionalLight2);
+
+const directionalLight3 = new THREE.DirectionalLight(0xffffff, 0.2);
+directionalLight3.position.set(-15, 5, 25);
+scene.add(directionalLight3);
+
+const directionalLight4 = new THREE.DirectionalLight(0xffffff, 0.2);
+directionalLight4.position.set(-15, -5, 25);
+scene.add(directionalLight4);
 
 // Credit card dimensions (in mm)
 const cardWidth = 85.6;
@@ -731,6 +737,61 @@ function exportAsPNG() {
 
 // Add event listener for PNG export button
 document.getElementById('export-png').addEventListener('click', exportAsPNG);
+
+// Export as GLTF
+function exportAsGLTF() {
+    // Create a new scene for export
+    const exportScene = new THREE.Scene();
+    
+    // Clone the card and its materials
+    const cardClone = card.clone();
+    cardClone.material = card.material.clone();
+    exportScene.add(cardClone);
+    
+    // Clone text elements
+    textElements.children.forEach(textMesh => {
+        const clone = textMesh.clone();
+        clone.material = textMesh.material.clone();
+        exportScene.add(clone);
+    });
+    
+    // Clone SVG elements
+    svgElements.children.forEach(svgMesh => {
+        const clone = svgMesh.clone();
+        clone.material = svgMesh.material.clone();
+        exportScene.add(clone);
+    });
+    
+    // Create exporter
+    const exporter = new THREE.GLTFExporter();
+    
+    // Export options
+    const options = {
+        binary: true, // Export as GLB (binary) instead of GLTF
+        trs: true, // Use TRS properties
+        onlyVisible: true, // Only export visible objects
+        maxTextureSize: 4096, // Maximum texture size
+        animations: [], // No animations to export
+        includeCustomExtensions: false
+    };
+    
+    // Export the scene
+    exporter.parse(exportScene, (gltf) => {
+        // Create download link
+        const blob = new Blob([gltf], { type: 'application/octet-stream' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'cloud-card.glb';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    }, options);
+}
+
+// Add event listener for GLTF export button
+document.getElementById('export-gltf').addEventListener('click', exportAsGLTF);
 
 // Animation loop
 function animate() {
