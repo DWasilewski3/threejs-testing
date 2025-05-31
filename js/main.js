@@ -190,6 +190,31 @@ function updateComponentsList() {
             editControls.appendChild(saveButton);
             info.appendChild(editControls);
         }
+        // Add edit controls for SVG components
+        else if (component.type === 'svg' && id === selectedComponentId) {
+            const editControls = document.createElement('div');
+            editControls.className = 'edit-controls';
+            
+            const sizeInput = document.createElement('input');
+            sizeInput.type = 'number';
+            sizeInput.value = component.sizePercent || 100;
+            sizeInput.min = '10';
+            sizeInput.max = '500';
+            sizeInput.placeholder = 'Size (%)';
+            sizeInput.onclick = (e) => e.stopPropagation();
+            
+            const saveButton = document.createElement('button');
+            saveButton.className = 'save-button';
+            saveButton.textContent = 'Save Changes';
+            saveButton.onclick = (e) => {
+                e.stopPropagation();
+                updateSVGSize(id, sizeInput.value);
+            };
+            
+            editControls.appendChild(sizeInput);
+            editControls.appendChild(saveButton);
+            info.appendChild(editControls);
+        }
         
         const deleteButton = document.createElement('button');
         deleteButton.className = 'delete';
@@ -295,8 +320,6 @@ function moveComponent(direction) {
 
 // Scale component
 function scaleComponent(component, delta) {
-    if (component.type === 'text') return;
-    
     const currentScale = component.mesh.scale.x;
     let newScale = currentScale + (delta < 0 ? SCALE_STEP : -SCALE_STEP);
     newScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, newScale));
@@ -533,11 +556,14 @@ document.getElementById('svg-upload').addEventListener('change', (event) => {
                     emissiveIntensity: 0.2
                 });
                 
+                // Get size from input
+                const sizePercent = parseInt(document.getElementById('svg-size').value) || 100;
+                
                 // Calculate scale to fit within card boundaries
                 const maxWidth = cardWidth / 10;
                 const maxHeight = cardHeight / 10;
-                const scaleX = maxWidth / img.width;
-                const scaleY = maxHeight / img.height;
+                const scaleX = (maxWidth / img.width) * (sizePercent / 100);
+                const scaleY = (maxHeight / img.height) * (sizePercent / 100);
                 const scale = Math.min(scaleX, scaleY) * 0.8;
                 
                 const geometry = new THREE.PlaneGeometry(img.width * scale, img.height * scale);
@@ -552,7 +578,8 @@ document.getElementById('svg-upload').addEventListener('change', (event) => {
                     name: file.name,
                     mesh: svgMesh,
                     originalWidth: img.width,
-                    originalHeight: img.height
+                    originalHeight: img.height,
+                    sizePercent: sizePercent
                 });
                 updateComponentsList();
 
@@ -563,6 +590,28 @@ document.getElementById('svg-upload').addEventListener('change', (event) => {
         reader.readAsText(file);
     }
 });
+
+// Update SVG size
+function updateSVGSize(id, newSizePercent) {
+    const component = components.get(id);
+    if (!component || component.type !== 'svg') return;
+    
+    component.sizePercent = newSizePercent;
+    
+    // Calculate new scale
+    const maxWidth = cardWidth / 10;
+    const maxHeight = cardHeight / 10;
+    const scaleX = (maxWidth / component.originalWidth) * (newSizePercent / 100);
+    const scaleY = (maxHeight / component.originalHeight) * (newSizePercent / 100);
+    const scale = Math.min(scaleX, scaleY) * 0.8;
+    
+    // Update geometry
+    const geometry = new THREE.PlaneGeometry(
+        component.originalWidth * scale,
+        component.originalHeight * scale
+    );
+    component.mesh.geometry = geometry;
+}
 
 // Export as SVG
 function exportAsSVG() {
@@ -719,8 +768,42 @@ function exportAsPNG() {
     const tempCamera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
     tempCamera.position.z = 8;
     
+    // Create a temporary scene for the export
+    const tempScene = new THREE.Scene();
+    
+    // Clone the card and its materials
+    const cardClone = card.clone();
+    cardClone.material = card.material.clone();
+    tempScene.add(cardClone);
+    
+    // Clone text elements
+    textElements.children.forEach(textMesh => {
+        const clone = textMesh.clone();
+        clone.material = textMesh.material.clone();
+        tempScene.add(clone);
+    });
+    
+    // Clone SVG elements
+    svgElements.children.forEach(svgMesh => {
+        const clone = svgMesh.clone();
+        clone.material = svgMesh.material.clone();
+        tempScene.add(clone);
+    });
+    
+    // Add even lighting for the export
+    const exportAmbientLight = new THREE.AmbientLight(0xffffff, 1);
+    tempScene.add(exportAmbientLight);
+    
+    const exportFrontLight = new THREE.DirectionalLight(0xffffff, 1);
+    exportFrontLight.position.set(0, 0, 10);
+    tempScene.add(exportFrontLight);
+    
+    const exportBackLight = new THREE.DirectionalLight(0xffffff, 0.5);
+    exportBackLight.position.set(0, 0, -10);
+    tempScene.add(exportBackLight);
+    
     // Render the scene
-    tempRenderer.render(scene, tempCamera);
+    tempRenderer.render(tempScene, tempCamera);
     
     // Convert to PNG and download
     const dataURL = tempCanvas.toDataURL('image/png');

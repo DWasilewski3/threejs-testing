@@ -26,36 +26,67 @@
             width: 100%;
             height: 100%;
         }
-        #controls {
+        #controls, #left-controls {
             position: fixed;
             top: 20px;
-            right: 20px;
             background: var(--card-background);
-            padding: 20px;
+            padding: 15px;
             border-radius: 16px;
             box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
             max-height: calc(100vh - 100px);
             overflow-y: auto;
-            width: 320px;
+            width: 280px;
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
+            z-index: 1000;
+        }
+        #controls {
+            right: 20px;
+        }
+        #left-controls {
+            left: 20px;
         }
         .control-group {
-            margin-bottom: 25px;
-            padding: 15px;
+            margin-bottom: 15px;
+            padding: 12px;
             background: rgba(255, 255, 255, 0.5);
             border-radius: 12px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
         }
         .control-group h3 {
-            margin: 0 0 15px 0;
+            margin: 0 0 12px 0;
             color: var(--text-color);
             font-size: 16px;
             font-weight: 600;
         }
+        .input-group {
+            margin: 4px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .input-group label {
+            font-size: 13px;
+            color: var(--text-color);
+            white-space: nowrap;
+        }
+        .input-group input[type="number"] {
+            width: 60px;
+            padding: 6px 8px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 6px;
+            font-size: 13px;
+            transition: all 0.2s ease;
+            background: rgba(255, 255, 255, 0.8);
+        }
+        .input-group input[type="number"]:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.15);
+        }
         button {
-            padding: 10px 16px;
-            margin: 5px;
+            padding: 8px 14px;
+            margin: 4px;
             border: none;
             border-radius: 8px;
             background: var(--primary-color);
@@ -88,8 +119,8 @@
         input[type="number"],
         select {
             width: 100%;
-            padding: 12px;
-            margin: 5px 0;
+            padding: 10px;
+            margin: 4px 0;
             border: 1px solid rgba(0, 0, 0, 0.1);
             border-radius: 8px;
             font-size: 14px;
@@ -104,7 +135,7 @@
             box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.15);
         }
         #components-list {
-            margin-top: 15px;
+            margin-top: 12px;
             max-height: 200px;
             overflow-y: auto;
             border: 1px solid rgba(0, 0, 0, 0.1);
@@ -114,11 +145,12 @@
         .component-item {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            padding: 12px;
+            align-items: flex-start;
+            padding: 10px;
             border-bottom: 1px solid rgba(0, 0, 0, 0.05);
             cursor: pointer;
             transition: all 0.2s ease;
+            position: relative;
         }
         .component-item:hover {
             background-color: rgba(0, 0, 0, 0.02);
@@ -126,6 +158,25 @@
         .component-item.selected {
             background-color: rgba(0, 122, 255, 0.1);
             border-left: 3px solid var(--primary-color);
+        }
+        .component-info {
+            flex: 1;
+            margin-right: 30px;
+        }
+        button.delete {
+            background: #FF3B30;
+            padding: 4px 8px;
+            font-size: 12px;
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            border-radius: 4px;
+            opacity: 0.8;
+            transition: opacity 0.2s ease;
+        }
+        button.delete:hover {
+            background: #FF2D55;
+            opacity: 1;
         }
         .mode-info {
             font-size: 13px;
@@ -139,11 +190,11 @@
         .color-options {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-            margin-top: 10px;
+            gap: 6px;
+            margin-top: 8px;
         }
         .color-option {
-            padding: 12px;
+            padding: 10px;
             border: 2px solid transparent;
             border-radius: 8px;
             cursor: pointer;
@@ -156,14 +207,14 @@
             border-color: var(--primary-color);
         }
         .svg-resources {
-            margin-top: 15px;
-            padding: 15px;
+            margin-top: 12px;
+            padding: 12px;
             background: rgba(255, 255, 255, 0.8);
             border-radius: 8px;
         }
         .file-upload {
             position: relative;
-            margin: 10px 0;
+            margin: 8px 0;
         }
         .file-upload input[type="file"] {
             display: none;
@@ -171,15 +222,16 @@
         .file-upload label {
             display: block;
             width: 100%;
-            padding: 10px 16px;
+            padding: 6px 10px;
             background: var(--secondary-color);
             color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 6px;
             cursor: pointer;
             font-weight: 500;
             text-align: center;
             transition: all 0.2s ease;
+            font-size: 13px;
         }
         .file-upload label:hover {
             background: #4A4AFF;
@@ -197,7 +249,7 @@
             position: fixed;
             bottom: 0;
             left: 0;
-            width: calc(100% - 360px); /* Account for controls panel */
+            width: 100%;
             background: transparent;
             padding: 15px 0;
             text-align: center;
@@ -316,20 +368,40 @@
             background: #4A4AFF;
             transform: translateY(-1px);
         }
+        #preview-controls {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 20px;
+            z-index: 1000;
+            text-align: center;
+        }
+        #preview-controls .toggle {
+            margin-bottom: 8px;
+        }
+        #preview-controls .mode-info {
+            background: transparent;
+            color: rgba(255, 255, 255, 0.8);
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        }
     </style>
 </head>
 <body>
     <div id="canvas-container"></div>
-    <div id="controls">
-        <div class="control-group">
-            <button id="preview-toggle" class="toggle">Enter Preview Mode</button>
-            <div class="mode-info" id="mode-info">Edit Mode: Use mouse to rotate and zoom card</div>
-        </div>
+    <div id="preview-controls">
+        <button id="preview-toggle" class="toggle">Enter Preview Mode</button>
+        <div class="mode-info" id="mode-info">Edit Mode: Use mouse to rotate and zoom card</div>
+    </div>
+    <div id="left-controls">
         <div class="control-group">
             <h3>Text Controls</h3>
             <input type="text" id="text-input" placeholder="Enter text">
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                <input type="number" id="font-size" value="24" min="8" max="72" placeholder="Font Size">
+                <div class="input-group">
+                    <label for="font-size">Font Size:</label>
+                    <input type="number" id="font-size" value="50" min="8" max="1000" placeholder="Size">
+                </div>
                 <select id="font-family">
                     <option value="Arial" style="font-family: Arial;">Arial</option>
                     <option value="Times New Roman" style="font-family: 'Times New Roman';">Times New Roman</option>
@@ -355,6 +427,11 @@
             <div class="file-upload">
                 <label for="svg-upload">Upload SVG</label>
                 <input type="file" id="svg-upload" accept=".svg">
+            </div>
+            <div class="input-group" style="margin-top: 10px;">
+                <label for="svg-size">Size:</label>
+                <input type="number" id="svg-size" value="100" min="10" max="500" placeholder="Size">
+                <span>%</span>
             </div>
             <div class="svg-resources">
                 <button class="dropdown-toggle" onclick="toggleResources()">
@@ -385,15 +462,17 @@
                 <button class="color-option" data-color="blue" style="background-color: #0000cc;">Blue</button>
             </div>
         </div>
+    </div>
+    <div id="controls">
         <div class="control-group">
             <h3>Components</h3>
             <div id="components-list"></div>
         </div>
         <div class="control-group">
             <h3>Export Options</h3>
-            <button id="export-svg">Export as SVG</button>
+            <!-- <button id="export-svg">Export as SVG</button> -->
             <button id="export-png">Export as PNG</button>
-            <button id="export-gltf">Export as 3D Model</button>
+            <!-- <button id="export-gltf">Export as 3D Model</button> -->
         </div>
     </div>
     <footer id="footer">
