@@ -746,7 +746,7 @@ function exportAsSVG() {
 }
 
 // Add event listener for export button
-document.getElementById('export-svg').addEventListener('click', exportAsSVG);
+// document.getElementById('export-svg').addEventListener('click', exportAsSVG);
 
 // Export as PNG
 function exportAsPNG() {
@@ -874,7 +874,7 @@ function exportAsGLTF() {
 }
 
 // Add event listener for GLTF export button
-document.getElementById('export-gltf').addEventListener('click', exportAsGLTF);
+// document.getElementById('export-gltf').addEventListener('click', exportAsGLTF);
 
 // Animation loop
 function animate() {
