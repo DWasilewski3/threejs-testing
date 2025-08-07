@@ -13,6 +13,41 @@ context.fillRect(0, 0, 2, 2);
 const backgroundTexture = new THREE.CanvasTexture(canvas);
 scene.background = backgroundTexture;
 
+// Greenscreen state
+let isGreenscreenActive = false;
+
+// Auto-rotate state
+let isAutoRotating = false;
+let autoRotateSpeed = 0.01; // Rotation speed in radians per frame
+
+// Function to toggle greenscreen
+function toggleGreenscreen() {
+    isGreenscreenActive = !isGreenscreenActive;
+    
+    if (isGreenscreenActive) {
+        // Set to green screen color (#00FF00)
+        scene.background = new THREE.Color(0x00FF00);
+    } else {
+        // Restore original gradient background
+        scene.background = backgroundTexture;
+    }
+}
+
+// Function to toggle auto-rotate
+function toggleAutoRotate() {
+    isAutoRotating = !isAutoRotating;
+    
+    // Update button text
+    const button = document.getElementById('auto-rotate-toggle');
+    if (isAutoRotating) {
+        button.textContent = 'Stop Auto Rotate';
+        button.classList.add('active');
+    } else {
+        button.textContent = 'Auto Rotate';
+        button.classList.remove('active');
+    }
+}
+
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -821,6 +856,12 @@ function exportAsPNG() {
 // Add event listener for PNG export button
 document.getElementById('export-png').addEventListener('click', exportAsPNG);
 
+// Add event listener for greenscreen toggle
+document.getElementById('greenscreen-toggle').addEventListener('click', toggleGreenscreen);
+
+// Add event listener for auto-rotate toggle
+document.getElementById('auto-rotate-toggle').addEventListener('click', toggleAutoRotate);
+
 // Export as GLTF
 function exportAsGLTF() {
     // Create a new scene for export
@@ -879,6 +920,12 @@ function exportAsGLTF() {
 // Animation loop
 function animate() {
     requestAnimationFrame(animate);
+    
+    // Auto-rotate the card if enabled
+    if (isAutoRotating) {
+        card.rotation.y += autoRotateSpeed;
+    }
+    
     controls.update();
     renderer.render(scene, camera);
 }
