@@ -18,7 +18,8 @@ let isGreenscreenActive = false;
 
 // Auto-rotate state
 let isAutoRotating = false;
-let autoRotateSpeed = 0.01; // Rotation speed in radians per frame
+let baseAutoRotateSpeed = 0.01; // Base rotation speed in radians per frame
+let autoRotateSpeed = baseAutoRotateSpeed; // Current rotation speed
 
 // Function to toggle greenscreen
 function toggleGreenscreen() {
@@ -27,9 +28,30 @@ function toggleGreenscreen() {
     if (isGreenscreenActive) {
         // Set to green screen color (#00FF00)
         scene.background = new THREE.Color(0x00FF00);
+        
+        // Hide all controls
+        document.getElementById('left-controls').style.display = 'none';
+        document.getElementById('controls').style.display = 'none';
+        document.getElementById('preview-controls').style.display = 'none';
+        document.getElementById('footer').style.display = 'none';
+        
+        // Update button text
+        const button = document.getElementById('greenscreen-toggle');
+        button.textContent = 'Press ESC to exit greenscreen';
+        
     } else {
         // Restore original gradient background
         scene.background = backgroundTexture;
+        
+        // Show all controls
+        document.getElementById('left-controls').style.display = 'block';
+        document.getElementById('controls').style.display = 'block';
+        document.getElementById('preview-controls').style.display = 'block';
+        document.getElementById('footer').style.display = 'block';
+        
+        // Update button text
+        const button = document.getElementById('greenscreen-toggle');
+        button.textContent = 'Greenscreen';
     }
 }
 
@@ -46,6 +68,19 @@ function toggleAutoRotate() {
         button.textContent = 'Auto Rotate';
         button.classList.remove('active');
     }
+}
+
+// Function to update rotation speed
+function updateRotationSpeed() {
+    const speedInput = document.getElementById('rotate-speed');
+    const speedValue = document.getElementById('speed-value');
+    const speedPercent = parseInt(speedInput.value);
+    
+    // Update display
+    speedValue.textContent = speedPercent + '%';
+    
+    // Update rotation speed (convert percentage to multiplier)
+    autoRotateSpeed = baseAutoRotateSpeed * (speedPercent / 50); // 50% = normal speed
 }
 
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -121,7 +156,11 @@ const cardMaterial = new THREE.MeshStandardMaterial({
 
 // Create card mesh
 const card = new THREE.Mesh(cardGeometry, cardMaterial);
-scene.add(card);
+
+// Create a main group to contain all card elements
+const cardGroup = new THREE.Group();
+cardGroup.add(card);
+scene.add(cardGroup);
 
 // Position camera further back for a smaller initial view
 camera.position.z = 8;
@@ -129,12 +168,12 @@ camera.position.z = 8;
 // Text elements container
 const textElements = new THREE.Group();
 textElements.position.z = cardThickness / 20 + 0.01;
-scene.add(textElements);
+cardGroup.add(textElements);
 
 // SVG elements container
 const svgElements = new THREE.Group();
 svgElements.position.z = cardThickness / 20 + 0.01;
-scene.add(svgElements);
+cardGroup.add(svgElements);
 
 // Component tracking
 let componentCount = 0;
@@ -862,6 +901,19 @@ document.getElementById('greenscreen-toggle').addEventListener('click', toggleGr
 // Add event listener for auto-rotate toggle
 document.getElementById('auto-rotate-toggle').addEventListener('click', toggleAutoRotate);
 
+// Add event listener for rotation speed slider
+document.getElementById('rotate-speed').addEventListener('input', updateRotationSpeed);
+
+// Initialize rotation speed on page load
+document.addEventListener('DOMContentLoaded', updateRotationSpeed);
+
+// Add keyboard event listener for escape key
+document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && isGreenscreenActive) {
+        toggleGreenscreen();
+    }
+});
+
 // Export as GLTF
 function exportAsGLTF() {
     // Create a new scene for export
@@ -921,9 +973,9 @@ function exportAsGLTF() {
 function animate() {
     requestAnimationFrame(animate);
     
-    // Auto-rotate the card if enabled
+    // Auto-rotate the entire card group if enabled
     if (isAutoRotating) {
-        card.rotation.y += autoRotateSpeed;
+        cardGroup.rotation.y += autoRotateSpeed;
     }
     
     controls.update();

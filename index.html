@@ -80,10 +80,19 @@
             background: rgba(255, 255, 255, 0.8);
         }
         .input-group input[type="number"]:focus {
-            border-color: var(--primary-color);
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.15);
-        }
+    border-color: var(--primary-color);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.15);
+}
+.input-group input[type="range"] {
+    width: 80px;
+    margin: 0 8px;
+}
+.input-group span {
+    font-size: 13px;
+    color: var(--text-color);
+    min-width: 30px;
+}
         button {
             padding: 8px 14px;
             margin: 4px;
@@ -478,6 +487,11 @@
             <h3>Background Options</h3>
             <button id="greenscreen-toggle">Toggle Green Screen</button>
             <button id="auto-rotate-toggle">Auto Rotate</button>
+            <div class="input-group" style="margin-top: 10px;">
+                <label for="rotate-speed">Speed:</label>
+                <input type="range" id="rotate-speed" value="50" min="1" max="100" step="1">
+                <span id="speed-value">50%</span>
+            </div>
         </div>
     </div>
     <footer id="footer">
